@@ -43,6 +43,30 @@ async function getAllPlayersData(req, res) {
     }
 }
 
+async function updatePlayerData(req, res) {
+    try {
+        console.log('update item', req.body.updatedIndex)
+        await knex(PLAYER_TABLE_NAME)
+            .where('id', req.body.updatedIndex)
+            .update({
+                firstname: req.body.firstname,
+                lastname: req.body.lastname
+            })
+
+        var newData = await getTableData();
+        res.status(200).send({
+            status: 200,
+            message: "successfully deleted",
+            data: newData
+        });
+
+    } catch (e) {
+        console.log('error');
+        console.log(e)
+    }
+}
+
+
 async function deletePlayerData(req, res) {
     try {
         console.log('deleted item', req.body.id)
@@ -65,6 +89,7 @@ async function deletePlayerData(req, res) {
 module.exports = {
     savePlayerData: savePlayerData,
     getAllPlayersData: getAllPlayersData,
-    deletePlayerData: deletePlayerData
+    deletePlayerData: deletePlayerData,
+    updatePlayerData:updatePlayerData
 
 }

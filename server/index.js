@@ -36,6 +36,7 @@ app.get('/api', controller.getAllPlayersData);
 
 app.post('/api', controller.savePlayerData);
 app.delete('/delete',controller.deletePlayerData);
+app.put('/api',controller.updatePlayerData);
 
 
 app.listen(PORT, () => {

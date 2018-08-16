@@ -20,6 +20,11 @@
     <div class="container"></div>
 </div>
 <script>
+    var _const = {
+        inEditedMode: false,
+        editIndex: -1
+    }
+
     function render(data) {
         var str = '<ul>';
         for (var i = 0; i < data.length; i++) {
@@ -34,9 +39,9 @@
     }
 
     function insertedItme(data) {
-        var str='';
+        var str = '';
         str += `<li data-serverId=${data.id}><p>
-                    <span>${ data.firstname}</span>||<span>${ data.lastname}</span>
+                    <span class="first">${ data.firstname}</span>||<span class="last">${ data.lastname}</span>
                     <button id="edit">Edit</button>
                     <button id="delete">Delete</button>
                     </p></li>`
@@ -58,19 +63,38 @@
 
     function bindActions() {
         $('button.add').on('click', () => {
-            var first = $('#first').val();
-            var last = $('#last').val()
-            $.ajax({
-                type: "POST",
-                url: "http://localhost:3000/api",
-                data: {'firstname': first, 'lastname': last},
-                success: function (result) {
-                    if (result.status == 200) {
-                      // init();
-                        $('.container ul').append(insertedItme(result.data[0]))
+            if (!_const.inEditedMode) {
+                var first = $('#first').val();
+                var last = $('#last').val()
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost:3000/api",
+                    data: {'firstname': first, 'lastname': last},
+                    success: function (result) {
+                        if (result.status == 200) {
+                            // init();
+                            $('.container ul').append(insertedItme(result.data[0]))
+                        }
                     }
-                }
-            });
+                });
+            } else {
+                var first = $('#first').val();
+                var last = $('#last').val()
+                $.ajax({
+                    type: "PUT",
+                    url: "http://localhost:3000/api",
+                    data: {'firstname': first, 'lastname': last,updatedIndex:_const.editIndex},
+                    success: function (result) {
+                        if (result.status == 200) {
+                            // init();
+                            _const.editIndex =-1;
+                            _const.inEditedMode =false;
+                            $('.container').html(render(result.data));
+                            $('.add').text('Add')
+                        }
+                    }
+                });
+            }
 
         })
 
@@ -85,12 +109,27 @@
                 success: function (result) {
 
                     if (result.data) {
-                        $('.container').append(render(result.data));
+                        $('.container').html(render(result.data));
                     }
                 }
             });
 
         })
+
+        $('.container').on('click', 'button#edit', function () {
+
+            console.log('edit btn', $(this).closest('li').attr('data-serverId'));
+            _const.editIndex = $(this).closest('li').attr('data-serverId')
+            var firstname = $(this).siblings('span').eq(0).html();
+            var lastname = $(this).siblings('span').eq(1).html();
+            $('#first').val(firstname);
+            $('#last').val(lastname);
+            _const.inEditedMode = true;
+            $('.add').text('Save');
+
+
+        })
+
     }
 
     $(function () {

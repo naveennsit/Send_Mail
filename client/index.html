@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../node_modules/jquery/dist/jquery.js"></script>
+</head>
+<body>
+<div>
+    <div>
+        <span>Name:</span>
+        <input type="text" id="first"/>
+    </div>
+    <div>
+        <span>LastName:</span>
+        <input type="text" id="last"/>
+    </div>
+    <button class="add">Add</button>
+
+    <div class="container"></div>
+</div>
+<script>
+    function render(data) {
+        var str = '<ul>';
+        for (var i = 0; i < data.length; i++) {
+            str += `<li data-serverId=${data[i].id}><p>
+                    <span>${ data[i].firstname}</span>||<span>${ data[i].lastname}</span>
+                    <button id="edit">Edit</button>
+                    <button id="delete">Delete</button>
+                    </p></li>`
+        }
+        str += '</ul>';
+        return str;
+    }
+
+    function insertedItme(data) {
+        var str='';
+        str += `<li data-serverId=${data.id}><p>
+                    <span>${ data.firstname}</span>||<span>${ data.lastname}</span>
+                    <button id="edit">Edit</button>
+                    <button id="delete">Delete</button>
+                    </p></li>`
+        return str;
+    }
+
+    function init() {
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:3000/api",
+            success: function (result) {
+                console.log(result);
+                if (result.data) {
+                    $('.container').append(render(result.data));
+                }
+            }
+        });
+    }
+
+    function bindActions() {
+        $('button.add').on('click', () => {
+            var first = $('#first').val();
+            var last = $('#last').val()
+            $.ajax({
+                type: "POST",
+                url: "http://localhost:3000/api",
+                data: {'firstname': first, 'lastname': last},
+                success: function (result) {
+                    if (result.status == 200) {
+                      // init();
+                        $('.container ul').append(insertedItme(result.data[0]))
+                    }
+                }
+            });
+
+        })
+
+        $('.container').on('click', 'button#delete', function () {
+
+            console.log('delete btn', $(this).closest('li').attr('data-serverId'));
+            var id = $(this).closest('li').attr('data-serverId')
+            $.ajax({
+                type: "DELETE",
+                url: "http://localhost:3000/delete",
+                data: {'id': id},
+                success: function (result) {
+
+                    if (result.data) {
+                        $('.container').append(render(result.data));
+                    }
+                }
+            });
+
+        })
+    }
+
+    $(function () {
+
+        init();
+        bindActions()
+    })
+</script>
+</body>
+</html>
